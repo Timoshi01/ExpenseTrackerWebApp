@@ -1,0 +1,6 @@
+{
+  "version": "v2.0.0",
+  "lastUpdated": "2026-05-30T10:00:00Z",
+  "changelog": "Added Firebase sync, budget planning, offline support",
+  "minSupportedVersion": "1.0.0"
+}

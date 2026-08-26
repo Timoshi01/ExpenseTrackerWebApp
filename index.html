@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <title>ExpenseTracker</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" href="/icons/Gemini_Generated_Image_esra3nesra3nesra.png">
+  <link rel="apple-touch-icon" href="/icons/Gemini_Generated_Image_esra3nesra3nesra.png">
+  <meta name="theme-color" content="#FF6B9D">
+  <script>
+    window.APP_VERSION = "v2.0.0";
+    window.BUILD_TIMESTAMP = "2026-05-30";
+  </script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <main class="main-content">
+      <!-- Connection Banner -->
+      <div id="connectionBanner" class="connection-banner hidden">
+        <span id="connectionBannerIcon">🌐</span>
+        <span id="connectionBannerText">Checking connection...</span>
+      </div>
+
+      <!-- Persistent Settings Shortcut -->
+      <button id="settingsShortcut" class="header-settings-btn" title="Settings">⚙️</button>
+
+      <!-- Dashboard View -->
+      <div id="dashboardView" class="view active">
+        <div class="greeting">
+          <span class="greeting-emoji">🌸</span>
+          <h2>Hello User!</h2>
+          <p>I hope you will budget your money wisely 💖</p>
+          <p>May God bless your financial journey!</p>
+        </div>
+
+        <!-- Fun Metrics Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card gradient-pink">
+            <div class="metric-icon">💰</div>
+            <div class="metric-details">
+              <span class="metric-label">Total Spent</span>
+              <span class="metric-value" id="totalSpent">₱0</span>
+            </div>
+          </div>
+          <div class="metric-card gradient-purple">
+            <div class="metric-icon" id="dynamicMonthIcon">
+              <div class="dynamic-calendar-icon">
+                <div class="cal-month" id="iconMonth">MAY</div>
+                <div class="cal-day" id="iconDay">27</div>
+              </div>
+            </div>
+            <div class="metric-details">
+              <span class="metric-label">This Month</span>
+              <span class="metric-value" id="monthSpent">₱0</span>
+            </div>
+          </div>
+          <div class="metric-card gradient-orange">
+            <div class="metric-icon">📊</div>
+            <div class="metric-details">
+              <span class="metric-label">Daily Average</span>
+              <span class="metric-value" id="dailyAvg">₱0</span>
+            </div>
+          </div>
+          <div class="metric-card gradient-blue">
+            <div class="metric-icon">🎯</div>
+            <div class="metric-details">
+              <span class="metric-label">Budget Left</span>
+              <span class="metric-value" id="budgetLeft">₱0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overall Budget Progress -->
+        <div class="budget-overview-card">
+          <h3>🎯 Monthly Budget Progress</h3>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="overallBudgetProgress" style="width: 0%"></div>
+          </div>
+          <div class="budget-stats">
+            <span>Spent: <strong id="overallSpent">₱0</strong></span>
+            <span>Budget: <strong id="overallBudgetLimit">₱0</strong></span>
+            <span>Remaining: <strong id="overallRemaining">₱0</strong></span>
+          </div>
+        </div>
+
+        <!-- NEW: Expense Distribution Chart -->
+        <div class="budget-card">
+          <h3>📊 Expense Distribution (%)</h3>
+          <div class="chart-container" style="position: relative; height:250px;">
+            <canvas id="expenseDistributionChart"></canvas>
+          </div>
+          <div id="distributionBars" class="distribution-bars"></div>
+        </div>
+
+        <!-- Budget Alert -->
+        <div id="budgetAlert" class="alert warning hidden">
+          <span>⚠️</span>
+          <span id="alertMessage"></span>
+        </div>
+
+        <!-- Category Expenses Progress -->
+        <div class="section-header">
+          <h3>📊 Category Expenses</h3>
+        </div>
+        <div id="categoryExpensesList" class="category-budgets-list"></div>
+
+        <!-- Recent Transactions -->
+        <div class="recent-card">
+          <h3>🕒 Recent Activity</h3>
+          <div id="recentList" class="recent-list"></div>
+        </div>
+      </div>
+
+      <!-- Budget Planning View (NEW) -->
+      <div id="budgetView" class="view">
+        <div class="view-header">
+          <div id="dynamicBudgetHeaderIcon" style="margin-right: 12px;">
+            <div class="dynamic-calendar-icon" style="width: 32px; height: 32px;">
+              <div class="cal-month" style="font-size: 6px;" id="budgetIconMonth">MAY</div>
+              <div class="cal-day" style="font-size: 14px;" id="budgetIconDay">27</div>
+            </div>
+          </div>
+          <h2>Budget Planner</h2>
+        </div>
+        
+        <!-- Overall Budget -->
+        <div class="budget-card">
+          <h3>💰 Set Budget Goal</h3>
+          <div class="form-group" style="margin-bottom: 15px;">
+            <label>Budget Period</label>
+            <div class="budget-period-selector">
+              <div id="budgetPeriodCalendarIcon" class="dynamic-calendar-icon" style="width: 36px; height: 36px; flex-shrink: 0;">
+                <div class="cal-month" style="font-size: 6px; padding: 2px 0;" id="budgetPeriodIconMonth">MAY</div>
+                <div class="cal-day" style="font-size: 14px;" id="budgetPeriodIconDay">27</div>
+              </div>
+              <select id="budgetPeriodSelect" class="fun-select" style="flex: 1;">
+                <option value="monthly">Monthly Budget</option>
+                <option value="weekly">Weekly Budget</option>
+                <option value="daily">Daily Budget</option>
+              </select>
+            </div>
+          </div>
+          <div class="budget-input-group">
+            <input type="number" id="totalBudgetGoal" placeholder="Enter amount (₱)">
+            <button id="setTotalBudgetBtn" class="primary-btn" style="width: 100%; margin-top: 10px;">Set Goal & Go Home</button>
+            <button id="resetBudgetBtn" class="secondary-btn" style="width: 100%; margin-top: 10px;">Reset Budget</button>
+          </div>
+        </div>
+
+        <!-- Smart Recommendations -->
+        <div class="budget-card">
+          <h3>💡 Smart Recommendations</h3>
+          <div id="recommendations" class="recommendations-list"></div>
+        </div>
+
+        <!-- Budget vs Actual Chart -->
+        <div class="budget-card">
+          <h3>📊 Budget vs Actual</h3>
+          <canvas id="budgetVsActualChart"></canvas>
+        </div>
+      </div>
+
+      <!-- All Expenses View -->
+      <div id="expensesView" class="view">
+        <div class="view-header">
+          <h2>📝 Expenses History</h2>
+          <button id="darkModeToggle" class="icon-btn">🌙</button>
+        </div>
+        
+        <!-- NEW: Activity Heatmap -->
+        <div class="heatmap-card">
+          <h3>🔥 Activity Heatmap (Last 30 Days)</h3>
+          <div id="spendingHeatmap" class="heatmap-grid"></div>
+        </div>
+
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="🔍 Search expenses...">
+        </div>
+        
+        <div class="filters-bar" style="align-items: center;">
+          <button id="historyFilterBtn" class="icon-btn" style="background: var(--card-bg); padding: 10px; border-radius: 12px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 8px;">
+            <div class="dynamic-calendar-icon" style="width: 28px; height: 28px; border-width: 1px;">
+              <div class="cal-month" style="font-size: 5px; padding: 1px 0;" id="filterIconMonth">MAY</div>
+              <div class="cal-day" style="font-size: 12px;" id="filterIconDay">27</div>
+            </div>
+            <span style="font-size: 14px; font-weight: 600;">Filter</span>
+          </button>
+          <div id="historyFilterDisplay" class="filter-display-tag hidden" onclick="openHistoryPicker()" style="cursor: pointer;">
+            <span id="activeFilterText">All Time</span>
+            <button id="clearFilterBtn" class="clear-btn" onclick="event.stopPropagation(); clearHistoryFilter();">✕</button>
+          </div>
+          <button id="exportCSVBtn" class="secondary-btn" style="margin-left: auto;">💾 Save file</button>
+        </div>
+
+        <!-- History Picker Modal -->
+        <div id="historyPickerModal" class="modal-overlay hidden">
+          <div class="picker-modal">
+            <div class="modal-header">
+              <h3 id="pickerTitle">Select Year</h3>
+              <button id="closePickerBtn" class="icon-btn">✖️</button>
+            </div>
+            <div id="pickerOptions" class="picker-options-list"></div>
+            <div class="modal-footer">
+              <button id="pickerBackBtn" class="secondary-btn-sm hidden">⬅️ Back</button>
+              <button id="pickerOkBtn" class="primary-btn-sm">Apply Selection</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="archiveNotification" class="alert success hidden">
+          <span>📅</span>
+          <span>New month! Last month's report is ready.</span>
+          <button id="downloadLastMonthBtn" class="small-btn">Save Receipt</button>
+        </div>
+
+        <div id="expensesList" class="expenses-list"></div>
+      </div>
+
+      <!-- NEW: Financial Calendar View -->
+      <div id="calendarView" class="view">
+        <div class="view-header">
+          <div id="dynamicCalendarHeaderIcon" style="margin-right: 12px;">
+            <div class="dynamic-calendar-icon" style="width: 32px; height: 32px;">
+              <div class="cal-month" style="font-size: 6px;" id="headerMonth">MAY</div>
+              <div class="cal-day" style="font-size: 14px;" id="headerDay">27</div>
+            </div>
+          </div>
+          <h2>Financial Calendar</h2>
+        </div>
+        <div class="calendar-card">
+          <div class="calendar-controls">
+            <button id="prevMonth" class="icon-btn">⬅️</button>
+            <div class="calendar-title-container">
+              <h3 id="calendarMonthYear" style="cursor: pointer;" title="Click to jump to date">Month Year</h3>
+              <div id="calendarPicker" class="calendar-picker hidden">
+                <select id="jumpMonth" class="fun-select-sm"></select>
+                <select id="jumpYear" class="fun-select-sm"></select>
+                <button id="jumpGoBtn" class="small-btn">Go</button>
+              </div>
+            </div>
+            <button id="nextMonth" class="icon-btn">➡️</button>
+          </div>
+          <div class="calendar-grid-header">
+            <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+          </div>
+          <div id="calendarGrid" class="calendar-grid"></div>
+        </div>
+        <!-- Total for the day in Calendar View -->
+        <div id="calendarDayTotalContainer" class="budget-card hidden" style="margin-top: 10px; padding: 15px;">
+           <div style="display: flex; justify-content: space-between; align-items: center;">
+             <span id="calendarDayTotalLabel" style="font-weight: 600;">Day Total:</span>
+             <span id="calendarDayTotal" style="font-size: 20px; font-weight: bold; color: var(--primary);">₱0.00</span>
+           </div>
+        </div>
+        <div id="dayDetails" class="day-details-card hidden">
+          <div class="details-header">
+            <h3 id="selectedDayTitle">Details</h3>
+            <button id="closeDetails" class="icon-btn">✖️</button>
+          </div>
+          <div id="dayExpensesList" class="recent-list"></div>
+        </div>
+      </div>
+
+      <!-- Add Expense View -->
+      <div id="addView" class="view">
+        <div class="view-header">
+          <h2>✨ Add New Expense</h2>
+        </div>
+        <form id="expenseForm" class="expense-form">
+          <div class="form-group">
+            <label>📂 Category</label>
+            <input type="text" id="category" list="categorySuggestions" placeholder="Enter category (e.g. Food, Shampoo)" required>
+            <datalist id="categorySuggestions">
+              <!-- Dynamically populated -->
+            </datalist>
+          </div>
+          <div class="form-group">
+            <label>💵 Amount (₱)</label>
+            <input type="number" id="amount" step="0.01" placeholder="0.00" required>
+          </div>
+          <div class="form-group">
+            <label>📅 Date</label>
+            <input type="date" id="date" required>
+          </div>
+          <div class="form-group">
+            <label>📝 Note (optional)</label>
+            <input type="text" id="note" placeholder="e.g., Coffee with friends ☕">
+          </div>
+          <button type="submit" class="primary-btn">➕ Add Expense</button>
+        </form>
+      </div>
+
+      <!-- Reports View -->
+      <div id="reportsView" class="view">
+        <div class="view-header">
+          <h2>📊 Fun Reports</h2>
+        </div>
+        <div class="reports-container">
+          <div class="report-card">
+            <h3>🎯 Category Breakdown</h3>
+            <div id="categoryBreakdown" class="breakdown-list"></div>
+          </div>
+          <div class="report-card">
+            <h3>📆 Monthly Comparison</h3>
+            <div id="monthlyComparison" class="comparison-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings View -->
+      <div id="settingsView" class="view">
+        <div class="view-header">
+          <button id="settingsBackBtn" class="back-btn" title="Go Back">⬅️</button>
+          <h2>⚙️ Settings</h2>
+        </div>
+        <div class="settings-card">
+          <!-- Google Auth Section -->
+          <div class="setting-item" id="googleAuthSection">
+            <label>🔐 Google Account</label>
+            <div id="userInfoDisplay" style="margin-top: 10px;">
+              <div id="loggedOutState">
+                <button id="googleSignInBtn" class="google-login-btn" onclick="handleGoogleLogin()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48" style="display: block;">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    <path fill="none" d="M0 0h48v48H0z"/>
+                  </svg>
+                  Sign in with Google
+                </button>
+              </div>
+              <div id="loggedInState" class="hidden">
+                <div class="user-account-display">
+                  <div class="user-profile">
+                    <div class="user-avatar" id="userAvatar">👤</div>
+                    <div class="user-info">
+                      <span class="user-email" id="userEmail">user@example.com</span>
+                      <span class="status-text">Account Synced</span>
+                    </div>
+                  </div>
+                  <button id="googleSignOutBtn" class="google-logout-btn" onclick="handleGoogleLogout()">Sign Out</button>
+                </div>
+              </div>
+            </div>
+            <div id="syncStatusDisplay" class="sync-status-container">
+              <div class="sync-dot"></div>
+              <span id="syncStatusText">Sign in to sync data</span>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <label>🎨 Dark Mode</label>
+            <button id="settingsDarkModeToggle" class="secondary-btn">Toggle Theme</button>
+          </div>
+
+          <div class="setting-item">
+            <label>💬 Feedback</label>
+            <button onclick="window.open('/review/', '_blank')" class="primary-btn" style="background: var(--secondary); width: 100%;">Leave a Review 💖</button>
+          </div>
+
+          <div class="setting-item">
+            <label>🔄 App Updates</label>
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+              <button id="checkUpdateBtn" class="secondary-btn" onclick="checkForAppUpdates(true)">Check for Updates</button>
+              <button id="clearCacheBtn" class="danger-btn" style="background: #f59e0b;" onclick="clearAndReload()">Clear Cache & Reload</button>
+            </div>
+            <div id="updateStatus" style="font-size: 12px; margin-top: 8px; color: var(--text-light);">
+              Current version: <span id="currentVersionDisplay">loading...</span>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <label>🗑️ Data Management</label>
+            <button id="clearAllDataBtn" class="danger-btn">Clear All Data</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-view="dashboard">
+        <span class="nav-emoji">📊</span>
+        <span>Home</span>
+      </button>
+      <button class="nav-btn" data-view="budget">
+        <span class="nav-emoji">🎯</span>
+        <span>Budget</span>
+      </button>
+      <button class="nav-btn main-btn" data-view="add">
+        <div class="main-btn-inner">
+          <span class="nav-emoji">➕</span>
+        </div>
+        <span>Add</span>
+      </button>
+      <button class="nav-btn" data-view="expenses">
+        <span class="nav-emoji">📜</span>
+        <span>History</span>
+      </button>
+      <button class="nav-btn" data-view="calendar">
+        <span class="nav-emoji" id="navDynamicIcon">
+          <div class="dynamic-calendar-icon" style="width: 22px; height: 22px; border-width: 1px; margin: 0 auto;">
+            <div class="cal-month" style="font-size: 4px; padding: 1px 0;" id="navIconMonth">MAY</div>
+            <div class="cal-day" style="font-size: 10px;" id="navIconDay">27</div>
+          </div>
+        </span>
+        <span>Calendar</span>
+      </button>
+    </nav>
+  </div>
+
+  <div class="version-badge" id="appVersion" onclick="checkForUpdates()">
+    Loading version...
+  </div>
+
+  <!-- Critical Scripts - Loaded as modules for proper ordering -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+
+  <!-- Firebase Modules - MUST load before app.js -->
+  <script type="module" src="/firebase-config.js"></script>
+  <script type="module" src="/firebase-init.js"></script>
+  <script type="module" src="/firebase-sync.js"></script>
+  <script type="module" src="/firebase-auth.js"></script>
+  <script type="module" src="/firebase-migration.js"></script>
+
+  <!-- Main app - loaded after Firebase modules -->
+  <script src="/app.js?v=2.0.0" defer></script>
+
+  <script type="module">
+    // Wait for firebase-auth.js to initialize and use the window functions it provides
+    // The UI updates are handled by app.js listening to user-logged-in/user-logged-out events
+    // This script just ensures the login button is clickable if window.loginWithGoogle is ready
+
+    function setupLoginButton() {
+      const savedUser = localStorage.getItem('firebase_user');
+      const loggedOutState = document.getElementById('loggedOutState');
+      const loggedInState = document.getElementById('loggedInState');
+      
+      if (savedUser && loggedInState && loggedOutState) {
+        try {
+          const user = JSON.parse(savedUser);
+          const emailEl = document.getElementById('userEmail');
+          const avatarEl = document.getElementById('userAvatar');
+          
+          if (emailEl) emailEl.textContent = user.email;
+          if (avatarEl) {
+            if (user.photoURL) {
+              avatarEl.innerHTML = `<img src="${user.photoURL}" alt="User" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+            } else {
+              avatarEl.textContent = user.displayName ? user.displayName[0] : '👤';
+            }
+          }
+          
+          loggedOutState.classList.add('hidden');
+          loggedInState.classList.remove('hidden');
+        } catch (e) {
+          console.warn('App: Error parsing saved user:', e);
+          if (loggedOutState) loggedOutState.classList.remove('hidden');
+          if (loggedInState) loggedInState.classList.add('hidden');
+        }
+      } else if (loggedOutState && loggedInState) {
+        loggedOutState.classList.remove('hidden');
+        loggedInState.classList.add('hidden');
+      }
+    }
+
+    // Setup immediately and after a short delay to ensure module loads
+    setupLoginButton();
+    setTimeout(setupLoginButton, 500);
+
+    // Also listen for login/logout events to update the button
+    window.addEventListener('user-logged-in', (e) => {
+      console.log('App: Inline module received user-logged-in');
+      setupLoginButton();
+    });
+
+    window.addEventListener('user-logged-out', () => {
+      console.log('App: Inline module received user-logged-out');
+      setupLoginButton();
+    });
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js?v=2.0.0');
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "ExpenseTracker",
+  "short_name": "ExpenseTracker",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "theme_color": "#FF6B9D",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "icons/Gemini_Generated_Image_esra3nesra3nesra.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

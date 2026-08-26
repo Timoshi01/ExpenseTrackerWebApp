@@ -1,0 +1,13 @@
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+
+/sw.js
+  Cache-Control: no-cache
+  Service-Worker-Allowed: /
+
+/manifest.json
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache

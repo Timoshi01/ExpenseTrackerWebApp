@@ -1,0 +1,57 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // User profile documents
+    match /users/{userId} {
+      // Allow users to read/write their own profile
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // User expenses subcollection (users/{userId}/expenses/{expenseId})
+    match /users/{userId}/expenses/{expenseId} {
+      // Allow users to fully control their own expenses
+      allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Legacy expenses collection (for backwards compatibility)
+    match /expenses/{expenseId} {
+      // Allow read if user is logged in and owns the document
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+
+      // Allow create if user is logged in and document userId matches their UID
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId
+                    && isValidExpense(request.resource.data);
+
+      // Allow update if user is logged in and document userId matches their UID
+      allow update: if request.auth != null && request.auth.uid == request.resource.data.userId
+                    && isValidExpense(request.resource.data);
+
+      // Allow delete if user is logged in and owns the document
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // Reviews collection
+    match /reviews/{reviewId} {
+      // Allow any logged-in user to submit a review
+      allow create: if request.auth != null;
+      // Allow the admin to read all reviews
+      allow read: if request.auth != null && request.auth.token.email == 'timothyombajen2007@gmail.com';
+    }
+
+    // Helper function for validation
+    function isValidExpense(data) {
+      return data.amount is number && data.amount > 0
+          && data.category is string && data.category.size() > 0
+          && data.date is string;
+    }
+  }
+}
+
+/*
+Suggested Indexes for Firebase Console:
+1. Collection: users/{userId}/expenses
+   Fields: date (Descending)
+   Query Scope: Collection
+*/
